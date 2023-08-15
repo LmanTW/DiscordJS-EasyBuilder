@@ -135,10 +135,11 @@ interaction.channel.send(page)
 
 ## collect 
 ```js
-.collect(target, options) //收集交互
+await .collect(target, interaction, options) //收集交互
 ```
-* `target`｜可為Interaction或Message
-* `options <object>`｜collector的選項
+* `target`｜可為 Interaction 或 Message
+* `interaction`｜可為 Interaction 或不提供，如果不提供按鈕在被出發後可能會出現些 "此互交失敗" 的問題
+* `options <object>`｜collector 的選項
 
 ```js
 //預設的options
