@@ -1,142 +1,268 @@
 class Page {
-  #callback = {}
-  constructor () {
-    this.content = undefined
-    this.embeds = []
-    this.components = []
-    this._idUsed = []
+  #content = {
+    content: undefined,
+    files: [],
+    embeds: [],
+    components: []
   }
-  //設定內容
-  setContent (data) {
-    this.content = data
+  #callback = {}
+  #data
+
+  constructor (data) {
+    this.#data = data
+  }
+
+  get content () {return this.#content}
+
+  /**
+    ## 設定內容
+    ```js
+      Page.setContent(content)
+    ```
+    - `content <string>`｜訊息的內容
+  */
+  setContent (content) {
+    this.#content = content
     return this
   }
-  //設定Embed {color, title, url, footer, fields}
+
+  /**
+    ## 添加等案
+    ```js
+      Page.addFile(file)
+    ```
+    - `file <string>`｜檔案的路徑
+  */
+  addFile (file) {
+    this.#content.files.push(file)
+    return this
+  }
+
+  /**
+    ## 設定 Embed
+    ```js
+      Page.setEmbed(data)
+    ```
+    - `data <object>`
+    ```js
+      {
+        color: 'green',
+        title: 'Embed Example',
+        url: 'https://google.com',
+        image: undefined,
+        fields: {
+          { inline: true, name: 'My Name Is:', value: 'LmanTW' }
+        }
+        footer: { text: 'Hello Here' }
+      }
+    ```
+  */
   setEmbed (data) {
-    this.embeds.push({
+    this.#content.embeds = [{
       color: colors[data.color],
       title: data.title,
       url: data.url,
-      footer: data.footer,
-      fields: data.fields
-    })
+      files: data.files,
+      image: data.image,
+      fields: data.fields,
+      footer: data.footer
+    }]
     return this
   }
-  //添加按鈕 {customId, label, style, emoji}
-  addButton(data, callBack) {
-    if (this.components.length === 0 || this.components[this.components.length-1].components.length > 4) {
-      this.components.push({
-        type: 1,
-        components: []
-      })
-    }
-    let id = (data.customId === undefined) ? generateID(this._idUsed) : data.customId
-    this._idUsed.push(id)
-    if (data.style === 'link') {
-      this.components[this.components.length-1].components.push({
-        type: 2,
-        label: data.label,
-        url: data.url,
-        style: [1, 2, 3, 4, 5][['blue', 'gray', 'green', 'red', 'link'].indexOf(data.style)],
-        emoji: data.emoji
-      })
-    } else {
-      this.components[this.components.length-1].components.push({
-        type: 2,
-        custom_id: id,
-        label: data.label,
-        style: [1, 2, 3, 4, 5][['blue', 'gray', 'green', 'red', 'link'].indexOf(data.style)],
-        emoji: data.emoji
-      })
-      this.#callBack[id] = callBack
-    }
+
+  /**
+    ## 添加按鈕
+    ```js
+      Page.addButton(data, callback)
+    ```
+    - `data <object>`
+    ```js
+      {
+        style: 'link' //green, blue, red, gray, link
+        label: 'A Button'
+        emoji: '👍'
+        url: 'https://google.com' //只有 style 為 "link" 時才會生效
+      }
+    ```
+    - `callback <function>`｜按鈕觸發時回傳的函數，會包含一個 interaction，只有在 只有 style 為 "link" 時才會生效
+  */
+  addButton (data, callback) {
+    if (this.#content.components.length === 0 || this.#content.components[this.#content.components.length-1].components.length > 4 || (this.#content.components[this.#content.components.length-1].components[0] !== undefined && this.#content.components[this.#content.components.length-1].components[0].type === 3)) this.#content.components.push({ type: 1, components: [] })
+    let id = (data.customID === undefined) ? generateID(Object.keys(this.#callback)) : data.customID
+    this.#content.components[this.#content.components.length-1].components.push({
+      type: 2,
+      custom_id: (data.style === 'link') ? undefined : id,
+      style: [1, 2, 3, 4, 5][['blue', 'gray', 'green', 'red', 'link'].indexOf(data.style)],
+      label: data.label,
+      emoji: data.emoji,
+      url: (data.style === 'link') ? data.url : undefined 
+    })
+    if (data.style !== 'link') this.#callback[id] = callback
     return this
   }
-  //添加選擇菜單 {placeholder, options}
-  addSelectMenu (data, callBack) {
-    this.components.push({
-      type: 1,
-      components: []
-    })
-    let id = (data.customId === undefined) ? generateID(this._idUsed) : data.customId
-    this._idUsed.push(id)
-    this.components[this.components.length-1].components.push({
+
+  /**
+    ## 添加選單
+    ```js
+      Page.addSelectMenu(data, callback)
+    ```
+    - `data <object>`
+    ```js
+      {
+        placeholder: '未選取',
+        options: [
+          { label: '選項1', value: '1' },
+          { label: '選項2', value: '2' },
+          { label: '選項3', value: '3' }
+        ]
+      }
+    ```
+    - `callback <function>`｜選單觸發時回傳的函數，會包含一個 interaction
+  */
+  addSelectMenu (data, callback) {
+    this.#content.components.push({ type: 1, components: [] })
+    let id = (data.customID === undefined) ? generateID(Object.keys(this.#callback)) : data.customID
+    this.#content.components[this.#content.components.length-1].components.push({
       type: 3,
       custom_id: id,
       placeholder: data.placeholder,
       options: data.options
     })
-    this._callBack[id] = callBack
+    this.#callback[id] = callback
     return this
   }
-  //添加行
+
+  /**
+    ## 添加行
+    ```js
+      Page.addRow()
+    ```
+  */
   addRow () {
-    this.components.push({
-      type: 1,
-      components: []
-    })
+    this.#content.components.push({ type: 1, components: [] })
     return this
   }
-  //收集交互
-  async collect (target, options) {
+
+  /**
+    ## 收集交互
+    ```js
+      Page.collect(target, interaction, options)
+    ```
+    - `target <any>`｜一個 message 或 interaction
+    - `interaction <any>`｜一個 interaction (如果 target 為 interaction 就不必提供)
+    - `options <object>`｜**可以不提供**
+    ```js
+      {
+        filter, //一個返回 <boolean> 的 <function>
+        collect //收集的時間
+      }
+    ```
+  */
+  async collect (target, interaction, options) {
     let type = (target.author === undefined) ? 'interaction' : 'message'
+    try {
+      if (type === 'interaction') await target.update()
+      else await interaction.update()
+    } catch (error) {}
     if (options === undefined) {
       options = { 
-        filter: (type === 'interaction') ? i => i.user.id === target.user.id && this._idUsed.includes(i.customId) : i => i.user.id === target.interaction.user.id && this._idUsed.includes(i.customId), 
+        filter: async (e) => {
+          if (type === 'interaction') {
+            if (e.user.id === target.user.id && Object.keys(this.#callback).includes(e.customId)) return true
+            else return false
+          } else {
+            if (e.user.id === target.interaction.user.id && Object.keys(this.#callback).includes(e.customId)) return true
+            else return false
+          }
+        },
         time: 600000, 
-        max: 1 
       }
     }
     const collector = target.channel.createMessageComponentCollector(options)
-    collector.on('collect', async i => {
-      this._callBack[i.customId](i)
+    collector.on('collect', async (i) => {
+      collector.removeAllListeners('collect')
+      if (typeof this.#callback[i.customId] === 'function') this.#callback[i.customId](i)
     })
+    return target
   }
 }
 
 class Modal {
+  #id = `Modal.${generateID([])}`
+  #title
+  #components = []
+
   constructor (title) {
-    this._customId = `Modal.${generateID([])}`
-    this._title = title
-    this._components = []
+    this.#title = title
   }
-  //添加文字輸入
+  
+  /**
+    ## 添加文字輸入
+    ```js
+      Modal.addTextInput(data)
+    ```
+    - `data <object>`
+    ```js
+      {
+        customID: 'password',
+        style: 'short', //short, paragraph
+        label: '密碼',
+        value: 'WiBn125',
+        minLength: 5,
+        maxLength: 25,
+        placeholder: '未輸入'
+      }
+    ```
+  */
   addTextInput (data) {
-    this._components.push({
+    this.#components.push({
       type: 1,
       components: [{
         type: 4,
-        custom_id: data.customId,
-        label: data.label,
+        custom_id: data.customID,
         style: [1, 2][['short', 'paragraph'].indexOf(data.style)],
+        label: data.label,
+        value: data.value,
         min_length: data.minLength,
         max_length: data.maxLength,
-        value: data.value,
-        placeholder: data.placeholder
+        placeholder: data.placeholder,
       }]
     })
     return this
   }
-  //顯示Modal
-  showModal (interaction, callback, options) {
+
+  /**
+    ## 顯示 Modal
+    ```js
+      Modal.showModal(interaction, callback, options)
+    ```
+    - `interaction <any>`｜一個 interaction
+    - `callback <function>`｜用戶提交 Modal 後觸發的函數
+    - `options <object>`｜**可以不提供**
+    ```js
+      {
+        filter, //一個返回 <boolean> 的 <function>
+        collect //收集的時間
+      }
+    ```
+  */
+  async showModal (interaction, callback, options) {
     interaction.showModal({
-      title: this._title,
-      custom_id: this._customId,
-      components: this._components
+      custom_id: this.#id,
+      title: this.#title,
+      components: this.#components
     })
     if (options === undefined) {
       options = {
-        filter: i => i.user.id === interaction.user.id && i.customId === this._customId, 
+        filter: i => i.user.id === interaction.user.id && i.customId === this.#id, 
         time: 600000,
         max: 1
       }
     }
     interaction.awaitModalSubmit(options)
-      .then(async i => {
+      .then(async (i) => {
         let allInput = {}
-        this._components.map((item) => {
-          allInput[item.components[0].custom_id] = i.fields.getTextInputValue(item.components[0].custom_id)
-        })
+        this.#components.forEach((item) => allInput[item.components[0].custom_id] = i.fields.getTextInputValue(item.components[0].custom_id))
         try {
           await i.update()
         } catch (error) {}
@@ -145,9 +271,9 @@ class Modal {
   }
 }
 
-//內建工具
+module.exports = { Page, Modal }
 
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvxyz1234567890'
+//顏色
 const colors = {
   black: 2303786,
   white: 16777215,
@@ -168,17 +294,13 @@ const colors = {
 }
 
 //取得隨機數
-function getRandom (min,max) {
+function getRandom (min, max) {
   return Math.floor(Math.random()*max)+min
 }
 
 //生成ID
-function generateID (allKey) {
+function generateID (keys) {
   let string = `${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}`
-  while (allKey.includes(string)) {
-    string = `${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}`
-  }
+  while (keys.includes(string)) string = `${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}`
   return string
 }
-
-module.exports = { Page, Modal }
