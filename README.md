@@ -42,7 +42,7 @@ let page = new Page()
 ```js
 .setContent(content) //設定內容
 ```
-* `content <text>`｜訊息的內容
+* `content <string>`｜訊息的內容
 
 ## setEmbed()
 ```js
