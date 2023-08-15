@@ -1,10 +1,10 @@
 class Page {
+  #callback = {}
   constructor () {
     this.content = undefined
     this.embeds = []
     this.components = []
     this._idUsed = []
-    this.#callBack = {}
   }
   //設定內容
   setContent (data) {
