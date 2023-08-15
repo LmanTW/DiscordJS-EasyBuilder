@@ -293,6 +293,8 @@ const colors = {
   darkPurple: 7419530
 }
 
+const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+
 //取得隨機數
 function getRandom (min, max) {
   return Math.floor(Math.random()*max)+min
