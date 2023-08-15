@@ -15,7 +15,7 @@ let page = new Page()
   }, (interaction2) => {
     interaction2.channel.send('按鈕被點擊！')
   })
-let message = await page.collect(await interaction.channel.send(page), interaction)
+let message = await page.collect(await interaction.channel.send(page.content), interaction)
 ```
 
 # 內容
