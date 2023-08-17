@@ -6,11 +6,6 @@ class Page {
     components: []
   }
   #callback = {}
-  #data
-
-  constructor (data) {
-    this.#data = data
-  }
 
   get content () {return this.#content}
 
