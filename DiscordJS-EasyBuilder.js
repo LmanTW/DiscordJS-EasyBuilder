@@ -17,7 +17,7 @@ class Page {
     - `content <string>`｜訊息的內容
   */
   setContent (content) {
-    this.#content = content
+    this.#content.content = content
     return this
   }
 
