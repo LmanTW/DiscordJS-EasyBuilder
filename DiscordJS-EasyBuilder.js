@@ -5,6 +5,7 @@ class Page {
     embeds: [],
     components: []
   }
+
   #callback = {}
 
   get content () {return this.#content}
@@ -18,6 +19,7 @@ class Page {
   */
   setContent (content) {
     this.#content.content = content
+
     return this
   }
 
@@ -30,6 +32,7 @@ class Page {
   */
   addFile (file) {
     this.#content.files.push(file)
+
     return this
   }
 
@@ -62,6 +65,7 @@ class Page {
       fields: data.fields,
       footer: data.footer
     }]
+
     return this
   }
 
@@ -83,7 +87,9 @@ class Page {
   */
   addButton (data, callback) {
     if (this.#content.components.length === 0 || this.#content.components[this.#content.components.length-1].components.length > 4 || (this.#content.components[this.#content.components.length-1].components[0] !== undefined && this.#content.components[this.#content.components.length-1].components[0].type === 3)) this.#content.components.push({ type: 1, components: [] })
-    let id = (data.customID === undefined) ? generateID(Object.keys(this.#callback)) : data.customID
+
+    const id = (data.customID === undefined) ? generateID(Object.keys(this.#callback)) : data.customID
+
     this.#content.components[this.#content.components.length-1].components.push({
       type: 2,
       custom_id: (data.style === 'link') ? undefined : id,
@@ -92,7 +98,9 @@ class Page {
       emoji: data.emoji,
       url: (data.style === 'link') ? data.url : undefined 
     })
+
     if (data.style !== 'link') this.#callback[id] = callback
+
     return this
   }
 
@@ -116,14 +124,18 @@ class Page {
   */
   addSelectMenu (data, callback) {
     this.#content.components.push({ type: 1, components: [] })
-    let id = (data.customID === undefined) ? generateID(Object.keys(this.#callback)) : data.customID
+
+    const id = (data.customID === undefined) ? generateID(Object.keys(this.#callback)) : data.customID
+
     this.#content.components[this.#content.components.length-1].components.push({
       type: 3,
       custom_id: id,
       placeholder: data.placeholder,
       options: data.options
     })
+
     this.#callback[id] = callback
+
     return this
   }
 
@@ -135,6 +147,7 @@ class Page {
   */
   addRow () {
     this.#content.components.push({ type: 1, components: [] })
+
     return this
   }
 
@@ -154,11 +167,13 @@ class Page {
     ```
   */
   async collect (target, interaction, options) {
-    let type = (target.author === undefined) ? 'interaction' : 'message'
+    const type = (target.author === undefined) ? 'interaction' : 'message'
+
     try {
       if (type === 'interaction') await target.update()
       else await interaction.update()
     } catch (error) {}
+
     if (options === undefined) {
       options = { 
         filter: async (e) => {
@@ -173,11 +188,15 @@ class Page {
         time: 600000, 
       }
     }
+
     const collector = target.channel.createMessageComponentCollector(options)
+
     collector.on('collect', async (i) => {
       collector.removeAllListeners('collect')
+
       if (typeof this.#callback[i.customId] === 'function') this.#callback[i.customId](i)
     })
+
     return target
   }
 }
@@ -223,6 +242,7 @@ class Modal {
         placeholder: data.placeholder,
       }]
     })
+
     return this
   }
 
@@ -247,6 +267,7 @@ class Modal {
       title: this.#title,
       components: this.#components
     })
+
     if (options === undefined) {
       options = {
         filter: i => i.user.id === interaction.user.id && i.customId === this.#id, 
@@ -254,13 +275,17 @@ class Modal {
         max: 1
       }
     }
+
     interaction.awaitModalSubmit(options)
       .then(async (i) => {
-        let allInput = {}
+        const allInput = {}
+
         this.#components.forEach((item) => allInput[item.components[0].custom_id] = i.fields.getTextInputValue(item.components[0].custom_id))
+
         try {
           await i.update()
         } catch (error) {}
+
         callback(allInput)
       })
   }
@@ -297,7 +322,9 @@ function getRandom (min, max) {
 
 //生成ID
 function generateID (keys) {
-  let string = `${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}`
+  const string = `${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}`
+
   while (keys.includes(string)) string = `${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}${letters[getRandom(0, letters.length)]}`
+
   return string
 }
